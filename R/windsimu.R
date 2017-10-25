@@ -24,15 +24,15 @@
 #' \dontrun{
 #' library(windsimu)
 #' 
-#' simu_u2j_covary <- within_ind_var_simu_A(
+#' simu_u2j_covary <- windsimu(
 #' how_many_L2_per_L3 = 1000,
 #' how_many_L1_per_L2 = 9,
-#' x1_range = c(-1, 1),
+#' time_var_range = c(-1, 1),
 #' var_names = c("cons", "age"),
-#' x_matrix_A_x0_x1 = c(TRUE, TRUE),
-#' z_matrix_A_x0_x1 = c(TRUE, TRUE),
-#' x_matrix_B_x0_x1 = c(TRUE, TRUE),
-#' z_matrix_B_x0_x1 = c(TRUE, FALSE),
+#' x_matrix_A_cons_time = c(TRUE, TRUE),
+#' z_matrix_A_cons_time = c(TRUE, TRUE),
+#' x_matrix_B_cons_time = c(TRUE, TRUE),
+#' z_matrix_B_cons_time = c(TRUE, FALSE),
 #' beta = c(150, 6.5),
 #' alpha = c(-.95, 0.48),
 #' sigma2u =
@@ -44,8 +44,8 @@
 #'     ncol = 3,
 #'     byrow = TRUE
 #'   ),
-#' log_sigma2eij = TRUE,
-#' linear_sigma2eij_attempts = 10,
+#' log_sigma2e = TRUE,
+#' linear_sigma2e_attempts = 10,
 #' random_seed = 1
 #' )
 #' 
@@ -75,15 +75,15 @@
 #' random_seed = 1
 #' )
 #' 
-#' simu_no_u2j <- within_ind_var_simu_A(
+#' simu_no_u2j <- windsimu(
 #'   how_many_L2_per_L3 = 1000,
 #'   how_many_L1_per_L2 = 9,
-#'   x1_range = c(-1, 1),
+#'   time_var_range = c(-1, 1),
 #'   var_names = c("cons", "age"),
-#'   x_matrix_A_x0_x1 = c(TRUE, TRUE),
-#'   z_matrix_A_x0_x1 = c(TRUE, TRUE),
-#'   x_matrix_B_x0_x1 = c(TRUE, TRUE),
-#'   z_matrix_B_x0_x1 = c(FALSE, FALSE),
+#'   x_matrix_A_cons_time = c(TRUE, TRUE),
+#'   z_matrix_A_cons_time = c(TRUE, TRUE),
+#'   x_matrix_B_cons_time = c(TRUE, TRUE),
+#'   z_matrix_B_cons_time = c(FALSE, FALSE),
 #'   beta = c(150, 6.5),
 #'   alpha = c(-.95, 0.48),
 #'   sigma2u =
@@ -94,8 +94,8 @@
 #'       ncol = 2,
 #'       byrow = TRUE
 #'     ),
-#'   log_sigma2eij = TRUE,
-#'   linear_sigma2eij_attempts = 10,
+#'   log_sigma2e = TRUE,
+#'   linear_sigma2e_attempts = 10,
 #'   random_seed = 1
 #' )
 #' 
