@@ -51,6 +51,9 @@ structure for growth curve model with optional random effect for L2 variance
 \dontrun{
 library(windsimu)
 
+## Level 2 random effect in level 1 variance function
+## with this term also allowed to covary with random
+## intercept & random slope in level 2 covariance matrix:
 simu_u2j_covary <- windsimu(
 how_many_L2_per_L3 = 1000,
 how_many_L1_per_L2 = 9,
@@ -76,6 +79,16 @@ linear_sigma2e_attempts = 10,
 random_seed = 1
 )
 
+## inspect structure of returned object:
+str(simu_u2j_covary)
+
+## export simulated dataset (to current working directory) as .dta:
+library(haven)
+write_dta(simu_u2j_covary$simu_dataframe, "simu_u2j_covary.dta", version = 14)
+
+
+## Level 2 random effect in level 1 variance function
+## but covariance of this term set to 0 in level 2 covariance matrix:
 simu_u2j_no_covary <- windsimu(
 how_many_L2_per_L3 = 1000,
 how_many_L1_per_L2 = 9,
@@ -102,6 +115,8 @@ linear_sigma2e_attempts = 10,
 random_seed = 1
 )
 
+
+## No additional level 2 random effect:
 simu_no_u2j <- windsimu(
   how_many_L2_per_L3 = 1000,
   how_many_L1_per_L2 = 9,
@@ -126,7 +141,10 @@ simu_no_u2j <- windsimu(
   random_seed = 1
 )
 
-## Note age uncentred
+
+## No log link for level 1 variance function.
+## Note age uncentred (level 1 variance function more likely
+## to stay positive); also note linear_sigma2e_attempts:
 simu_u2j_covary_linearL1varfun_Revised <- windsimu(
   how_many_L2_per_L3 = 1000,
   how_many_L1_per_L2 = 9,
