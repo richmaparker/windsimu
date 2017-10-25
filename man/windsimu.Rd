@@ -153,4 +153,5 @@ simu_u2j_covary_linearL1varfun_Revised <- windsimu(
   random_seed = 1
 )
 }
+
 }
