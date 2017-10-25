@@ -126,7 +126,8 @@
 #'   random_seed = 1
 #' )
 #' }
-
+#'
+#' @export
 windsimu <- function(how_many_L2_per_L3,
                      how_many_L1_per_L2,
                      time_var_range,
