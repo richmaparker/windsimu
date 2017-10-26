@@ -3,17 +3,20 @@
 #' Function to create simulated dataset given user-defined parameters and data
 #' structure for growth curve model with optional random effect for L2 variance
 #' 
-#' @param sample_size List of named vectors specifying sample size at level 2 and level 1; order not important but need to be named (as \code{n2} and \code{n1}, respectively).
-#' @param var_names Character vector containing names for intercept and time variable (order not important, but elements must be
-#' named \code{x0} (corresponding to intercept) and \code{x1} (time); e.g. \code{c("x0" = "cons", "x1" = "age")}).
-#' @param x1_range Vector with min and max values for time variable (in that order; e.g. \code{c(12, 23)} to range from 12 to 23).
-#' @param design_matrices List of logical vectors indicating whether each variable to be included in design matrices or not; order of elements in each logical vector not important, but must be
-#' named \code{x0} (intercept) and \code{x1} (time). \code{TRUE} indicates variable to be included, \code{FALSE} otherwise. List elements themselves must be named \code{x_A} (corresponding to X matrix (fixed part) of model for mean of y),
-#' \code{z_A} (Z matrix (random part) of model for mean of y), \code{x_B} (X matrix (fixed part) of model for level 1 variance function),
-#' \code{z_B} (Z matrix (random part) of model for level 1 variance function). E.g. \code{list(x_A = c("x0" = TRUE, "x1" = TRUE), z_A = c("x0" = TRUE, "x1" = TRUE), x_B = c("x0" = TRUE, "x1" = TRUE), z_B = c("x0" = TRUE, "x1" = FALSE))}.
+#' @param sample_size List of named vectors specifying sample size at level 2 (named \code{n2}) and level 1 (named \code{n1}).
+#' @param var_names List of named character vectors indicating names for intercept (\code{x0}) and time variable (\code{x1}),
+#' e.g. \code{list(x0 = "cons", x1 = "age")}.
+#' @param x1_range Vector with min and max values for time variable (in that order: e.g. \code{c(12, 23)} to range from 12 to 23).
+#' @param design_matrices List of four named lists, with each of the latter relating to a design matrix. These four lists are \code{x_A}
+#' (corresponding to X matrix (fixed part) of model for mean of y), \code{z_A} (Z matrix (random part) of model for mean of y),
+#' \code{x_B} (X matrix (fixed part) of model for level 1 variance function), and \code{z_B} (Z matrix (random part) of model for
+#' level 1 variance function). Each of these four lists to contain two named logical vectors (\code{x0} for intercept, \code{x1} for time),
+#' indicating whether each variable to be included in design matrices or not; \code{TRUE} indicates variable to be included, \code{FALSE} otherwise.
+#' E.g. \code{list(x_A = list(x0 = TRUE, x1 = TRUE), z_A = list(x0 = TRUE, x1 = TRUE), x_B = list(x0 = TRUE, x1 = TRUE), z_B = list(x0 = TRUE, x1 = FALSE))} for each variable
+#' in each design matrix, bar time variable excluded from \code{z_B}.
 #' @param beta Vector containing mean for each beta (i.e. coefficients of fixed effects for model for mean of y), in order of x0, x1.
 #' @param alpha Vector containing mean for each alpha (i.e. coefficients of fixed effects for level 1 variance function), in order of x0, x1.
-#' @param sigma2u Level 2 covariance matrix. E.g. the vector in \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)}
+#' @param sigma2u Level 2 covariance matrix. Row major order: e.g. the vector in \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)}
 #' would correspond to the following: sigma2u00 (\code{93}), sigma2u01 (\code{12}), sigma2u02 (\code{2.5}), sigma2u01 (\code{12}), sigma2u11 (\code{3.8}), sigma2u12 (\code{0.8}), sigma2u02 (\code{2.5}),
 #' sigma2u12 (\code{0.8}), sigma2u22 (\code{0.4}).
 #' @param sigma2e Numerical vector (one element); only specify if 1-level model; defaults to \code{NULL}.
@@ -32,13 +35,13 @@
 #' ## intercept & random slope in level 2 covariance matrix:
 #' simu_u2j_covary <- windsimu(
 #'   sample_size = list(n2 = 1000, n1 = 9),
-#'   var_names = c("x0" = "cons", "x1" = "age"),
+#'   var_names = list(x0 = "cons", x1 = "age"),
 #'   x1_range = c(-1, 1),
 #'   design_matrices = list(
-#'     x_A = c("x0" = TRUE, "x1" = TRUE),
-#'     z_A = c("x0" = TRUE, "x1" = TRUE),
-#'     x_B = c("x0" = TRUE, "x1" = TRUE),
-#'     z_B = c("x0" = TRUE, "x1" = FALSE)
+#'     x_A = list(x0 = TRUE, x1 = TRUE),
+#'     z_A = list(x0 = TRUE, x1 = TRUE),
+#'     x_B = list(x0 = TRUE, x1 = TRUE),
+#'     z_B = list(x0 = TRUE, x1 = FALSE)
 #'   ),
 #'   beta = c(150, 6.5),
 #'   alpha = c(-.95, 0.48),
@@ -68,13 +71,13 @@
 #' ## but covariance of this term set to 0 in level 2 covariance matrix:
 #' simu_u2j_no_covary <- windsimu(
 #'   sample_size = list(n2 = 1000, n1 = 9),
-#'   var_names = c("x0" = "cons", "x1" = "age"),
+#'   var_names = list(x0 = "cons", x1 = "age"),
 #'   x1_range = c(-1, 1),
 #'   design_matrices = list(
-#'     x_A = c("x0" = TRUE, "x1" = TRUE),
-#'     z_A = c("x0" = TRUE, "x1" = TRUE),
-#'     x_B = c("x0" = TRUE, "x1" = TRUE),
-#'     z_B = c("x0" = TRUE, "x1" = FALSE)
+#'     x_A = list(x0 = TRUE, x1 = TRUE),
+#'     z_A = list(x0 = TRUE, x1 = TRUE),
+#'     x_B = list(x0 = TRUE, x1 = TRUE),
+#'     z_B = list(x0 = TRUE, x1 = FALSE)
 #'   ),
 #'   beta = c(150, 6.5),
 #'   alpha = c(-.95, 0.48),
@@ -97,13 +100,13 @@
 #' ## No additional level 2 random effect:
 #' simu_no_u2j <- windsimu(
 #'   sample_size = list(n2 = 1000, n1 = 9),
-#'   var_names = c("x0" = "cons", "x1" = "age"),
+#'   var_names = list(x0 = "cons", x1 = "age"),
 #'   x1_range = c(-1, 1),
 #'   design_matrices = list(
-#'     x_A = c("x0" = TRUE, "x1" = TRUE),
-#'     z_A = c("x0" = TRUE, "x1" = TRUE),
-#'     x_B = c("x0" = TRUE, "x1" = TRUE),
-#'     z_B = c("x0" = FALSE, "x1" = FALSE)
+#'     x_A = list(x0 = TRUE, x1 = TRUE),
+#'     z_A = list(x0 = TRUE, x1 = TRUE),
+#'     x_B = list(x0 = TRUE, x1 = TRUE),
+#'     z_B = list(x0 = FALSE, x1 = FALSE)
 #'   ),
 #'     beta = c(150, 6.5),
 #'     alpha = c(-.95, 0.48),
@@ -124,15 +127,15 @@
 #' ## No log link for level 1 variance function.
 #' ## Note age uncentred (level 1 variance function more likely
 #' ## to stay positive); also note linear_sigma2e_attempts:
-#' simu_u2j_covary_linearL1varfun_Revised <- windsimu(
+#' simu_u2j_covary_linearL1varfun <- windsimu(
 #'   sample_size = list(n2 = 1000, n1 = 9),
-#'   var_names = c("x0" = "cons", "x1" = "age"),
+#'   var_names = list(x0 = "cons", x1 = "age"),
 #'   x1_range = c(11.25, 13.25),
 #'   design_matrices = list(
-#'     x_A = c("x0" = TRUE, "x1" = TRUE),
-#'     z_A = c("x0" = TRUE, "x1" = TRUE),
-#'     x_B = c("x0" = TRUE, "x1" = TRUE),
-#'     z_B = c("x0" = TRUE, "x1" = FALSE)
+#'     x_A = list(x0 = TRUE, x1 = TRUE),
+#'     z_A = list(x0 = TRUE, x1 = TRUE),
+#'     x_B = list(x0 = TRUE, x1 = TRUE),
+#'     z_B = list(x0 = TRUE, x1 = FALSE)
 #'   ),
 #'   beta = c(150, 6.5),
 #'   alpha = c(-.95, 0.48),
@@ -167,10 +170,11 @@ windsimu <- function(sample_size,
 
   set.seed(random_seed)
   
-  # ensure order of elements consistent ---------------------------
-  # (not necessary to order sample_size as only refer to elements of it by name)
-  var_names <- var_names[c("x0", "x1")]
+  # ensure x0, x1 are in that order; unlist as appropriate ---------------------------
+  # (NB not necessary to order sample_size as refer to elements of that by name only, likewise x_A, z_A. etc., in design_matrices)
+  var_names <- unlist(var_names[c("x0","x1")])
   design_matrices <- lapply(design_matrices, function(x) x[c("x0", "x1")])
+  design_matrices <- lapply(design_matrices, function(x) unlist(x))
   
   # create vectors ---------------------------
   total_L1 <- sample_size$n2 * sample_size$n1
