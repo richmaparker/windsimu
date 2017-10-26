@@ -4,44 +4,43 @@
 \alias{windsimu}
 \title{Simulate Datasets with User-Defined Patterns of Within-Individual Variation}
 \usage{
-windsimu(how_many_L2_per_L3, how_many_L1_per_L2, time_var_range,
-  var_names = c("cons", "age"), x_matrix_A_cons_time = c(TRUE, TRUE),
-  z_matrix_A_cons_time = c(TRUE, TRUE), x_matrix_B_cons_time = c(TRUE,
-  TRUE), z_matrix_B_cons_time = c(TRUE, FALSE), beta, alpha, sigma2u,
-  sigma2e = NULL, log_sigma2e = TRUE, linear_sigma2e_attempts = 10,
-  random_seed)
+windsimu(sample_size, var_names, x1_range, design_matrices, beta, alpha,
+  sigma2u, sigma2e = NULL, log_sigma2e = TRUE,
+  linear_sigma2e_attempts = 10, random_seed)
 }
 \arguments{
-\item{how_many_L2_per_L3}{Sample size at level 2 (there isn't an L3, but future compatible in case there ever is!)}
+\item{sample_size}{List of named vectors specifying sample size at level 2 and level 1; order not important but need to be named (as \code{n2} and \code{n1}, respectively).}
 
-\item{how_many_L1_per_L2}{Sample size at level 1, per level 2 unit}
+\item{var_names}{Character vector containing names for intercept and time variable (order not important, but elements must be
+named \code{x0} (corresponding to intercept) and \code{x1} (time); e.g. \code{c("x0" = "cons", "x1" = "age")}).}
 
-\item{time_var_range}{Vector with min and max for time variable (e.g. \code{c(12, 23)} to range from 12 to 23).}
+\item{x1_range}{Vector with min and max values for time variable (in that order; e.g. \code{c(12, 23)} to range from 12 to 23).}
 
-\item{var_names}{Character vector containing names for intercept and time variable (e.g. \code{c("cons", "age")}).}
+\item{design_matrices}{List of logical vectors indicating whether each variable to be included in design matrices or not; order of elements in each logical vector not important, but must be
+named \code{x0} (intercept) and \code{x1} (time). \code{TRUE} indicates variable to be included, \code{FALSE} otherwise. List elements themselves must be named \code{x_A} (corresponding to X matrix (fixed part) of model for mean of y),
+\code{z_A} (Z matrix (random part) of model for mean of y), \code{x_B} (X matrix (fixed part) of model for level 1 variance function),
+\code{z_B} (Z matrix (random part) of model for level 1 variance function). E.g. \code{list(x_A = c("x0" = TRUE, "x1" = TRUE), z_A = c("x0" = TRUE, "x1" = TRUE), x_B = c("x0" = TRUE, "x1" = TRUE), z_B = c("x0" = TRUE, "x1" = FALSE))}.}
 
-\item{x_matrix_A_cons_time}{Logical vector indicating whether intercept (cons) and time variables to be included in X design matrix A
-(i.e. fixed part of model for mean of y); e.g. \code{c(TRUE, FALSE)} indicates intercept, but not time, to be included.}
+\item{beta}{Vector containing mean for each beta (i.e. coefficients of fixed effects for model for mean of y), in order of x0, x1.}
 
-\item{z_matrix_A_cons_time}{As for \code{x_matrix_A_cons_time}, but Z matrix.}
+\item{alpha}{Vector containing mean for each alpha (i.e. coefficients of fixed effects for level 1 variance function), in order of x0, x1.}
 
-\item{x_matrix_B_cons_time}{As for \code{x_matrix_A_cons_time}, but X matrix for level 1 variance function.}
+\item{sigma2u}{Level 2 covariance matrix. E.g. the vector in \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)}
+would correspond to the following: sigma2u00 (\code{93}), sigma2u01 (\code{12}), sigma2u02 (\code{2.5}), sigma2u01 (\code{12}), sigma2u11 (\code{3.8}), sigma2u12 (\code{0.8}), sigma2u02 (\code{2.5}),
+sigma2u12 (\code{0.8}), sigma2u22 (\code{0.4}).}
 
-\item{z_matrix_B_cons_time}{As for \code{x_matrix_A_cons_time}, but Z matrix for level 1 variance function.}
+\item{sigma2e}{Numerical vector (one element); only specify if 1-level model; defaults to \code{NULL}.}
 
-\item{beta}{Vector containing mean for each beta (i.e. i.e. coefficients of fixed effects for model for mean of y).}
+\item{log_sigma2e}{Logical vector indicating whether log link used for level 1 variance function (\code{TRUE}) or not (\code{FALSE});
+defaults to \code{TRUE}.}
 
-\item{alpha}{Vector containing mean for each alpha (i.e. i.e. coefficients of fixed effects for level 1 variance function).}
+\item{linear_sigma2e_attempts}{Numerical vector (one element) corresponding to maximum number of attempts made to generate non-negative sigma2e (only applicable when \code{log_sigma2e = FALSE});
+defaults to \code{10}.}
 
-\item{sigma2u}{Level 2 covariance matrix; e.g. \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)}.}
-
-\item{sigma2e}{Vector (one element); only specify if 1-level model; defaults to \code{NULL}.}
-
-\item{log_sigma2e}{Logical vector indicating whether log link used for level 1 variance function (\code{TRUE}) or not (\code{FALSE}); defaults to \code{TRUE}.}
-
-\item{linear_sigma2e_attempts}{Maximum number of attempts made to generate non-negative sigma2e (only applicable when \code{log_sigma2e = FALSE}); defaults to \code{10}.}
-
-\item{random_seed}{Random seed adopted.}
+\item{random_seed}{Numerical vector indicating value of random seed to be set at outset.}
+}
+\value{
+List containing simulated dataset (as \code{simu_dataframe}), plus other relevant generated objects and user-defined parameters.
 }
 \description{
 Function to create simulated dataset given user-defined parameters and data
@@ -55,28 +54,29 @@ library(windsimu)
 ## with this term also allowed to covary with random
 ## intercept & random slope in level 2 covariance matrix:
 simu_u2j_covary <- windsimu(
-how_many_L2_per_L3 = 1000,
-how_many_L1_per_L2 = 9,
-time_var_range = c(-1, 1),
-var_names = c("cons", "age"),
-x_matrix_A_cons_time = c(TRUE, TRUE),
-z_matrix_A_cons_time = c(TRUE, TRUE),
-x_matrix_B_cons_time = c(TRUE, TRUE),
-z_matrix_B_cons_time = c(TRUE, FALSE),
-beta = c(150, 6.5),
-alpha = c(-.95, 0.48),
-sigma2u =
-  matrix(
-    c(93, 12, 2.5,
-      12, 3.8, 0.8,
-      2.5, 0.8, 0.4),
-    nrow = 3,
-    ncol = 3,
-    byrow = TRUE
+  sample_size = list(n2 = 1000, n1 = 9),
+  var_names = c("x0" = "cons", "x1" = "age"),
+  x1_range = c(-1, 1),
+  design_matrices = list(
+    x_A = c("x0" = TRUE, "x1" = TRUE),
+    z_A = c("x0" = TRUE, "x1" = TRUE),
+    x_B = c("x0" = TRUE, "x1" = TRUE),
+    z_B = c("x0" = TRUE, "x1" = FALSE)
   ),
-log_sigma2e = TRUE,
-linear_sigma2e_attempts = 10,
-random_seed = 1
+  beta = c(150, 6.5),
+  alpha = c(-.95, 0.48),
+  sigma2u =
+    matrix(
+      c(93, 12, 2.5,
+        12, 3.8, 0.8,
+        2.5, 0.8, 0.4),
+      nrow = 3,
+      ncol = 3,
+      byrow = TRUE
+    ),
+  log_sigma2e = TRUE,
+  linear_sigma2e_attempts = 10,
+  random_seed = 1
 )
 
 ## inspect structure of returned object:
@@ -90,70 +90,73 @@ write_dta(simu_u2j_covary$simu_dataframe, "simu_u2j_covary.dta", version = 14)
 ## Level 2 random effect in level 1 variance function
 ## but covariance of this term set to 0 in level 2 covariance matrix:
 simu_u2j_no_covary <- windsimu(
-how_many_L2_per_L3 = 1000,
-how_many_L1_per_L2 = 9,
-time_var_range = c(-1, 1),
-var_names = c("cons", "age"),
-x_matrix_A_cons_time = c(TRUE, TRUE),
-z_matrix_A_cons_time = c(TRUE, TRUE),
-x_matrix_B_cons_time = c(TRUE, TRUE),
-z_matrix_B_cons_time = c(TRUE, FALSE),
-beta = c(150, 6.5),
-alpha = c(-.95, 0.48),
-sigma2u =
-  matrix(
-    c(93, 12, 0,
-      12, 3.8, 0,
-      0, 0, 0.4),
-    nrow = 3,
-    ncol = 3,
-    byrow = TRUE
+  sample_size = list(n2 = 1000, n1 = 9),
+  var_names = c("x0" = "cons", "x1" = "age"),
+  x1_range = c(-1, 1),
+  design_matrices = list(
+    x_A = c("x0" = TRUE, "x1" = TRUE),
+    z_A = c("x0" = TRUE, "x1" = TRUE),
+    x_B = c("x0" = TRUE, "x1" = TRUE),
+    z_B = c("x0" = TRUE, "x1" = FALSE)
   ),
-sigma2e = NULL,
-log_sigma2e = TRUE,
-linear_sigma2e_attempts = 10,
-random_seed = 1
-)
-
-
-## No additional level 2 random effect:
-simu_no_u2j <- windsimu(
-  how_many_L2_per_L3 = 1000,
-  how_many_L1_per_L2 = 9,
-  time_var_range = c(-1, 1),
-  var_names = c("cons", "age"),
-  x_matrix_A_cons_time = c(TRUE, TRUE),
-  z_matrix_A_cons_time = c(TRUE, TRUE),
-  x_matrix_B_cons_time = c(TRUE, TRUE),
-  z_matrix_B_cons_time = c(FALSE, FALSE),
   beta = c(150, 6.5),
   alpha = c(-.95, 0.48),
   sigma2u =
     matrix(
-      c(93, 12,
-        12, 3.8),
-      nrow = 2,
-      ncol = 2,
+      c(93, 12, 0,
+        12, 3.8, 0,
+        0, 0, 0.4),
+      nrow = 3,
+      ncol = 3,
       byrow = TRUE
     ),
+  sigma2e = NULL,
   log_sigma2e = TRUE,
   linear_sigma2e_attempts = 10,
   random_seed = 1
 )
 
 
+## No additional level 2 random effect:
+simu_no_u2j <- windsimu(
+  sample_size = list(n2 = 1000, n1 = 9),
+  var_names = c("x0" = "cons", "x1" = "age"),
+  x1_range = c(-1, 1),
+  design_matrices = list(
+    x_A = c("x0" = TRUE, "x1" = TRUE),
+    z_A = c("x0" = TRUE, "x1" = TRUE),
+    x_B = c("x0" = TRUE, "x1" = TRUE),
+    z_B = c("x0" = FALSE, "x1" = FALSE)
+  ),
+    beta = c(150, 6.5),
+    alpha = c(-.95, 0.48),
+    sigma2u =
+      matrix(
+        c(93, 12,
+          12, 3.8),
+        nrow = 2,
+        ncol = 2,
+        byrow = TRUE
+      ),
+    log_sigma2e = TRUE,
+    linear_sigma2e_attempts = 10,
+    random_seed = 1
+  )
+
+
 ## No log link for level 1 variance function.
 ## Note age uncentred (level 1 variance function more likely
 ## to stay positive); also note linear_sigma2e_attempts:
 simu_u2j_covary_linearL1varfun_Revised <- windsimu(
-  how_many_L2_per_L3 = 1000,
-  how_many_L1_per_L2 = 9,
-  time_var_range = c(11.25, 13.25),
-  var_names = c("cons", "age"),
-  x_matrix_A_cons_time = c(TRUE, TRUE),
-  z_matrix_A_cons_time = c(TRUE, TRUE),
-  x_matrix_B_cons_time = c(TRUE, TRUE),
-  z_matrix_B_cons_time = c(TRUE, FALSE),
+  sample_size = list(n2 = 1000, n1 = 9),
+  var_names = c("x0" = "cons", "x1" = "age"),
+  x1_range = c(11.25, 13.25),
+  design_matrices = list(
+    x_A = c("x0" = TRUE, "x1" = TRUE),
+    z_A = c("x0" = TRUE, "x1" = TRUE),
+    x_B = c("x0" = TRUE, "x1" = TRUE),
+    z_B = c("x0" = TRUE, "x1" = FALSE)
+  ),
   beta = c(150, 6.5),
   alpha = c(-.95, 0.48),
   sigma2u =
