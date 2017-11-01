@@ -393,7 +393,7 @@ windsimu <- function(sample_size,
   simu_dataframe <- data.frame(L2_ID, L1_ID, y, predictors)
   colnames(simu_dataframe)[4:5] <- var_names
   if (!is.null(function_call$var_subgroup)){ # if applicable, add indicator for variance subgroups
-    simu_dataframe <- cbind(simu_dataframe, function_call$var_subgroup)
+    simu_dataframe <- cbind(simu_dataframe, var_subgroup = function_call$var_subgroup)
   }
   # Return list containing relevant outputs ---------------------------
   list(
