@@ -5,8 +5,7 @@
 \title{Simulate Datasets with User-Defined Patterns of Within-Individual Variation}
 \usage{
 windsimu(sample_size, var_names, x1_range, design_matrices, beta, alpha,
-  sigma2u, sigma2e = NULL, log_sigma2e = TRUE,
-  linear_sigma2e_attempts = 10, random_seed)
+  sigma2u, log_sigma2e = TRUE, linear_sigma2e_attempts = 10, random_seed)
 }
 \arguments{
 \item{sample_size}{List of named vectors specifying sample size at level 2 (named \code{n2}) and level 1 (named \code{n1}).}
@@ -28,11 +27,16 @@ in each design matrix, bar time variable excluded from \code{z_B}.}
 
 \item{alpha}{Vector containing mean for each alpha (i.e. coefficients of fixed effects for level 1 variance function), in order of x0, x1.}
 
-\item{sigma2u}{Level 2 covariance matrix. Row major order: e.g. the vector in \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)}
-would correspond to the following: sigma2u00 (\code{93}), sigma2u01 (\code{12}), sigma2u02 (\code{2.5}), sigma2u01 (\code{12}), sigma2u11 (\code{3.8}), sigma2u12 (\code{0.8}), sigma2u02 (\code{2.5}),
+\item{sigma2u}{If the intention is for each level 2 unit to have level 2 residual variance drawn from same covariance matrix, then this need only consists of a single (covariance) matrix.
+If the intention is instead to have different patterns of level 2 residual variance for different subgroups of level 2 units, then this needs to consist of a list with two elements:
+\code{matrices} and \code{props}. The former (\code{matrices}) is itself a list of covariance matrices: one for each subgroup, whereas the latter (\code{props}) is a
+numeric vector of the same length (i.e. corresponding to the total number of subgroups), demarcating breakpoints, as
+cumulative proportions, for each subgroup (the final element of \code{props} must be \code{1}). E.g. if there are 4 covariance matrices in \code{matrices}, then \code{props} might
+correspond to \code{c(0.1, 0.4, 0.6, 1)} if the first covariance matrix is to apply to 10 percent of the level 2 units, the next covariance matrix to 30 percent, then the final
+two to  20 percent and 40 percent (in that order) of the level 2 units. Note that the covariance matrices are in row major order: e.g. the vector in
+\code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)} would correspond to the following: sigma2u00 (\code{93}),
+sigma2u01 (\code{12}), sigma2u02 (\code{2.5}), sigma2u01 (\code{12}), sigma2u11 (\code{3.8}), sigma2u12 (\code{0.8}), sigma2u02 (\code{2.5}),
 sigma2u12 (\code{0.8}), sigma2u22 (\code{0.4}).}
-
-\item{sigma2e}{Numerical vector (one element); only specify if 1-level model; defaults to \code{NULL}.}
 
 \item{log_sigma2e}{Logical vector indicating whether log link used for level 1 variance function (\code{TRUE}) or not (\code{FALSE});
 defaults to \code{TRUE}.}
@@ -89,6 +93,54 @@ str(simu_u2j_covary)
 library(haven)
 write_dta(simu_u2j_covary$simu_dataframe, "simu_u2j_covary.dta", version = 14)
 
+## As above, but with different level 2 covariance matrices for different
+## subgroups of level 2 units; note sigma2u is now a list, consisting
+## of covariance matrices and cumulative proportions:
+simu_u2j_covary_subgroups <- windsimu(
+sample_size = list(n2 = 1000, n1 = 9),
+  var_names = list(x0 = "cons", x1 = "age"),
+  x1_range = c(-1, 1),
+  design_matrices = list(
+    x_A = list(x0 = TRUE, x1 = TRUE),
+    z_A = list(x0 = TRUE, x1 = TRUE),
+    x_B = list(x0 = TRUE, x1 = TRUE),
+    z_B = list(x0 = TRUE, x1 = FALSE)
+  ),
+  beta = c(150, 6.5),
+  alpha = c(-.95, 0.48),
+  sigma2u <- list(
+    matrices = list(
+      matrix(
+        c(93, 12, 2.5,
+          12, 3.8, 0.8,
+          2.5, 0.8, 0.4),
+        nrow = 3,
+        ncol = 3,
+        byrow = TRUE
+      ),
+      matrix(
+        c(93, 12, 2.5,
+          12, 3.8, 0.8,
+          2.5, 0.8, 1),
+        nrow = 3,
+        ncol = 3,
+        byrow = TRUE
+      ),
+      matrix(
+        c(93, 12, 2.5,
+          12, 3.8, 0.8,
+          2.5, 0.8, 3),
+        nrow = 3,
+        ncol = 3,
+        byrow = TRUE
+      )
+    ),
+    props = c(0.2, 0.4, 1)
+  ),
+  log_sigma2e = TRUE,
+  linear_sigma2e_attempts = 10,
+  random_seed = 1
+)
 
 ## Level 2 random effect in level 1 variance function
 ## but covariance of this term set to 0 in level 2 covariance matrix:
@@ -113,7 +165,6 @@ simu_u2j_no_covary <- windsimu(
       ncol = 3,
       byrow = TRUE
     ),
-  sigma2e = NULL,
   log_sigma2e = TRUE,
   linear_sigma2e_attempts = 10,
   random_seed = 1
@@ -171,7 +222,6 @@ simu_u2j_covary_linearL1varfun <- windsimu(
       ncol = 3,
       byrow = TRUE
     ),
-  sigma2e = NULL,
   log_sigma2e = FALSE,
   linear_sigma2e_attempts = 100,
   random_seed = 1
