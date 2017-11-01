@@ -22,7 +22,9 @@
 #' numeric vector of the same length (i.e. corresponding to the total number of subgroups), demarcating breakpoints, as
 #' cumulative proportions, for each subgroup (the final element of \code{props} must be \code{1}). E.g. if there are 4 covariance matrices in \code{matrices}, then \code{props} might
 #' correspond to \code{c(0.1, 0.4, 0.6, 1)} if the first covariance matrix is to apply to 10 percent of the level 2 units, the next covariance matrix to 30 percent, then the final
-#' two to  20 percent and 40 percent (in that order) of the level 2 units. Note that the covariance matrices are in row major order: e.g. the vector in
+#' two to  20 percent and 40 percent (in that order) of the level 2 units. If there are such subgroups, then the dataframe of simulated data (\code{simu_dataframe}) in the returned list
+#' will also contain a vector \code{var_subgroup}, numbered 1 to n, where n is the number of subgroups (numbered in same order as covariance matrices proffered). 
+#' Note that the covariance matrices are in row major order: e.g. the vector in
 #' \code{matrix(c(93, 12, 2.5, 12, 3.8, 0.8, 2.5, 0.8, 0.4), nrow = 3, ncol = 3, byrow = TRUE)} would correspond to the following: sigma2u00 (\code{93}),
 #' sigma2u01 (\code{12}), sigma2u02 (\code{2.5}), sigma2u01 (\code{12}), sigma2u11 (\code{3.8}), sigma2u12 (\code{0.8}), sigma2u02 (\code{2.5}),
 #' sigma2u12 (\code{0.8}), sigma2u22 (\code{0.4}).
