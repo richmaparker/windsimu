@@ -5,7 +5,8 @@
 \title{Simulate Datasets with User-Defined Patterns of Within-Individual Variation}
 \usage{
 windsimu(sample_size, var_names, x1_range, design_matrices, beta, alpha,
-  sigma2u, log_sigma2e = TRUE, linear_sigma2e_attempts = 10, random_seed)
+  gamma = NULL, distal_design_matrix = NULL, sigma2u, log_sigma2e = TRUE,
+  linear_sigma2e_attempts = 10, random_seed)
 }
 \arguments{
 \item{sample_size}{List of named vectors specifying sample size at level 2 (named \code{n2}) and level 1 (named \code{n1}).}
@@ -15,17 +16,22 @@ e.g. \code{list(x0 = "cons", x1 = "age")}.}
 
 \item{x1_range}{Vector with min and max values for time variable (in that order: e.g. \code{c(12, 23)} to range from 12 to 23).}
 
-\item{design_matrices}{List of four named lists, with each of the latter relating to a design matrix. These four lists are \code{x_A}
+\item{design_matrices}{List of five named lists, with each of the latter relating to a design matrix. These five lists are \code{x_A}
 (corresponding to X matrix (fixed part) of model for mean of y), \code{z_A} (Z matrix (random part) of model for mean of y),
-\code{x_B} (X matrix (fixed part) of model for level 1 variance function), and \code{z_B} (Z matrix (random part) of model for
-level 1 variance function). Each of these four lists to contain two named logical vectors (\code{x0} for intercept, \code{x1} for time),
-indicating whether each variable to be included in design matrices or not; \code{TRUE} indicates variable to be included, \code{FALSE} otherwise.
+\code{x_B} (X matrix (fixed part) of model for level 1 variance function), \code{z_B} (Z matrix (random part) of model for
+level 1 variance function) and \code{x_C} (X matrix (fixed part) for model of distal outcome). Each of the first four lists (i.e. \code{x_A},
+\code{z_A}, \code{x_B} and \code{z_B}) to contain two named logical vectors (\code{x0} for intercept, \code{x1} for time), indicating whether each variable to be included
+in design matrices or not; \code{TRUE} indicates variable to be included, \code{FALSE} otherwise. The last list (\code{x_C}) to contain up to four named logical vectors indicating
+whether constant (\code{x0}), and u2j terms (\code{x1}, \code{x2}, \code{x3}) to be included in model for distal outcome or not.
 E.g. \code{list(x_A = list(x0 = TRUE, x1 = TRUE), z_A = list(x0 = TRUE, x1 = TRUE), x_B = list(x0 = TRUE, x1 = TRUE), z_B = list(x0 = TRUE, x1 = FALSE))} for each variable
-in each design matrix, bar time variable excluded from \code{z_B}.}
+in each design matrix, bar time variable excluded from \code{z_B}. Note if \code{gamma = NULL}, \code{x_C} is set to \code{NULL}
+(i.e. no need to include \code{x_C} in \code{design_matrices} if do not wish to simulate distal outcome).}
 
-\item{beta}{Vector containing mean for each beta (i.e. coefficients of fixed effects for model for mean of y), in order of x0, x1.}
+\item{beta}{Vector containing coefficients of fixed effects for model for mean of y, in order of x0, x1.}
 
-\item{alpha}{Vector containing mean for each alpha (i.e. coefficients of fixed effects for level 1 variance function), in order of x0, x1.}
+\item{alpha}{Vector containing coefficients of fixed effects for level 1 variance function, in order of x0, x1.}
+
+\item{gamma}{Vector containing coefficients of fixed effects for model of distal outcome, in order of x0, x1, x2, x3. Defaults to \code{NULL}.}
 
 \item{sigma2u}{If the intention is for each level 2 unit to have level 2 residual variance drawn from same covariance matrix, then this need only consists of a single (covariance) matrix.
 If the intention is instead to have different patterns of level 2 residual variance for different subgroups of level 2 units, then this needs to consist of a list with two elements:
@@ -228,6 +234,40 @@ simu_u2j_covary_linearL1varfun <- windsimu(
   linear_sigma2e_attempts = 100,
   random_seed = 1
 )
+
+## As simu_u2j_covary (above), but with distal outcome;
+## note x_C in design_matrices, and gamma:
+simu_u2j_covary_distal <- windsimu(
+  sample_size = list(n2 = 1000, n1 = 9),
+  var_names = list(x0 = "cons", x1 = "age"),
+  x1_range = c(-1, 1),
+  design_matrices = list(
+    x_A = list(x0 = TRUE, x1 = TRUE),
+    z_A = list(x0 = TRUE, x1 = TRUE),
+    x_B = list(x0 = TRUE, x1 = TRUE),
+    z_B = list(x0 = TRUE, x1 = FALSE),
+    x_C = list(x0 = TRUE, x1 = TRUE, x2 = TRUE, x3 = TRUE)
+  ),
+  beta = c(150, 6.5),
+  alpha = c(-.95, 0.48),
+  gamma = c(1, 2, 3, 4),
+  sigma2u =
+    matrix(
+      c(93, 12, 2.5,
+        12, 3.8, 0.8,
+        2.5, 0.8, 0.4),
+      nrow = 3,
+      ncol = 3,
+      byrow = TRUE
+    ),
+  log_sigma2e = TRUE,
+  linear_sigma2e_attempts = 10,
+  random_seed = 1
+)
+
+
+
+
 }
 
 }
