@@ -93,7 +93,7 @@
 #'   ),
 #'   beta = c(150, 6.5),
 #'   alpha = c(-.95, 0.48),
-#'   sigma2u <- list(
+#'   sigma2u = list(
 #'     matrices = list(
 #'       matrix(
 #'         c(93, 12, 2.5,
@@ -255,7 +255,8 @@ windsimu <- function(sample_size,
                      beta,
                      alpha,
                      gamma = NULL,
-                     distal_design_matrix = NULL,
+                     distal_type = NULL,
+                     sigma2e_distal = 1,
                      sigma2u,
                      log_sigma2e = TRUE,
                      linear_sigma2e_attempts = 10,
@@ -280,7 +281,10 @@ windsimu <- function(sample_size,
   if(is.null(gamma)){
     design_matrices["x_C"] <- NA
     } else {
-    design_matrices["x_C"] <- lapply(design_matrices["x_C"], function(x) x[c("x0", "x1", "x2", "x3")])
+      if (is.null(distal_type)){
+        stop("Need to specify response type (Binary or Continuous) for distal outcome, via distal_type argument", call. = FALSE)
+      }
+      design_matrices["x_C"] <- lapply(design_matrices["x_C"], function(x) x[c("x0", "x1", "x2", "x3")])
     }
 
   # unlist ---------------------------
@@ -469,8 +473,13 @@ windsimu <- function(sample_size,
           x_matrix_C, MARGIN = 2, gamma, `*`
           )
         )
-      pr = 1 / (1 + exp(-fixpart_C))
-      distal_y = rbinom(sample_size$n2, 1, pr)
+      if (distal_type == "Binary"){
+        pr = 1 / (1 + exp(-fixpart_C))
+        distal_y = rbinom(sample_size$n2, 1, pr)
+      } else { # "Continuous" distal_type
+        randpart_C <- rnorm(n = sample_size$n2, mean = 0, sd = sqrt(sigma2e_distal))
+        distal_y <- fixpart_C + randpart_C
+      }
       simu_dataframe <- cbind(simu_dataframe, distal_y = distal_y[L2_ID])
       L2_ID_B <- unique(L2_ID)
       simu_dataframe_distal <- data.frame(cbind(L2_ID = L2_ID_B, distal_y, cons = L2_cons, sigma2_e_function_call$u))
@@ -479,6 +488,7 @@ windsimu <- function(sample_size,
     # if user does not require distal outcome:
     x_matrix_C <- NULL
     fixpart_C <- NULL
+    randpart_C <- NULL # what about if distal_type == "Binary"?
     simu_dataframe_distal <- NULL
   }
   
@@ -498,6 +508,7 @@ windsimu <- function(sample_size,
     fixpart_B = fixpart_B,
     randpart_B = sigma2_e_function_call$randpart_B,
     fixpart_C = fixpart_C,
+    randpart_C = randpart_C,
     u = sigma2_e_function_call$u,
     sigma2_e = sigma2_e_function_call$sigma2_e,
     sigma_e = sigma_e,
